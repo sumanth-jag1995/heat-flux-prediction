@@ -1,12 +1,13 @@
 import sys
 import pandas as pd
+import re
 from src.exception import CustomException
 from src.utils import load_object
 
 class PredictPipeline:
     def __init__(self):
         self.cat_features = ['author', 'geometry']
-        self.num_features = ['pressure_MPa_', 'mass_flux_kg/m2-s_',	'D_e_mm_', 'D_h_mm_', 'length_mm_', 'chf_exp_MW/m2_']
+        self.num_features = ['pressure [MPa]', 'mass_flux [kg/m2-s]', 'D_e [mm]', 'D_h [mm]', 'length [mm]', 'chf_exp [MW/m2]']
 
     def predict(self, features):
         try:
@@ -14,11 +15,11 @@ class PredictPipeline:
             preprocessor_path = 'artifacts/preprocessor.pkl'
             num_imputer_path = 'artifacts/numimputer.pkl'
             cat_imputer_path = 'artifacts/catimputer.pkl'
-            label_encoder_path = 'artifacts/numimputer.pkl'
+            label_encoder_path = 'artifacts/label_encoder.pkl'
             feature_selector_path = 'artifacts/fselector.pkl'
             
-            features.author = features.author.astype('object')
-            features.geometry = features.geometry.astype('object')
+            #features.author = features.author.astype('object')
+            #features.geometry = features.geometry.astype('object')
             model = load_object(file_path = model_path)
             preprocessor = load_object(file_path = preprocessor_path)
             num_imputer = load_object(file_path= num_imputer_path)
@@ -31,6 +32,8 @@ class PredictPipeline:
 
             for col in self.cat_features:
                 features[col] = label_encoder[col].transform(features[col].astype(str))
+            
+            features.columns = [re.sub(r'[\[\]<>\s]+', '_', col) for col in features.columns]
             
             data_scaled = preprocessor.transform(features)
             data_scaled_fs = feature_selector.transform(data_scaled)
@@ -64,12 +67,12 @@ class CustomData:
             custom_data_input_dict = {
                 "author": [self.author],
                 "geometry": [self.geometry],
-                "pressure_MPa_": [self.pressure],
-                "mass_flux_kg/m2-s_": [self.mass_flux],
-                "D_e_mm_": [self.d_e],
-                "D_h_mm_": [self.d_h],
-                "length_mm_": [self.length],
-                "chf_exp_MW/m2_": [self.chf_exp],
+                "pressure [MPa]": [self.pressure],
+                "mass_flux [kg/m2-s]": [self.mass_flux],
+                "D_e [mm]": [self.d_e],
+                "D_h [mm]": [self.d_h],
+                "length [mm]": [self.length],
+                "chf_exp [MW/m2]": [self.chf_exp],
             }
 
             return pd.DataFrame(custom_data_input_dict)

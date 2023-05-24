@@ -32,7 +32,7 @@ class DataTransformation:
 
             # Define numerical & categorical features
             cat_features = train_df.select_dtypes(include = ['object']).columns.tolist()
-            num_features = train_df.select_dtypes(include = ['float64']).columns.tolist()
+            num_features = train_df.drop(['x_e_out [-]'], axis=1).select_dtypes(include = ['float64']).columns.tolist()
             
             # Handling missing values in numerical variables
             logging.info("instantiate numerical imputer object")
@@ -63,12 +63,13 @@ class DataTransformation:
             
             # Define columns to be dropped/selected
             target_column_name = "x_e_out_-_"
+            id_column_name = "id"
 
             # Split the dataframe into input features and target feature
-            input_feature_train_df = train_df.drop(columns=[target_column_name], axis=1)
+            input_feature_train_df = train_df.drop(columns=[target_column_name, id_column_name], axis=1)
             target_feature_train_df = train_df[target_column_name]
 
-            input_feature_test_df = test_df.drop(columns=[target_column_name], axis=1)
+            input_feature_test_df = test_df.drop(columns=[target_column_name, id_column_name], axis=1)
             target_feature_test_df = test_df[target_column_name]
 
             logging.info(f"Applying preprocessing object on train and test dataframe.")
